@@ -10,9 +10,13 @@ Author: Koushal Kedari
 
 # Usage
 Used to crawl or spider a domain for subdomains and pages linked with the domain.
+
 `$ python3 crawler.py `
+
 `> Enter the target URL: [Enter the url https://example.com`
+
 `> Enter recursion depth: [ Number of recursion on particular link ]`
+
 `> Enter output file path: [ output.txt path]`
 
 
