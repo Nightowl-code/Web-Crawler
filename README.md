@@ -5,18 +5,18 @@ Author: Koushal Kedari
 
 
 
-### Installation
+# Installation
  `pip install requirements.txt`
 
-### Usage
-## Used to crawl or spider a domain for subdomains and pages linked with the domain.
-`$ python3 crawler.py 
-> Enter the target URL: [Enter the url https://example.com
-> Enter recursion depth: [ Number of recursion on particular link ]
-> Enter output file path: [ output.txt path]`
+# Usage
+# Used to crawl or spider a domain for subdomains and pages linked with the domain.
+`$ python3 crawler.py `
+`> Enter the target URL: [Enter the url https://example.com`
+`> Enter recursion depth: [ Number of recursion on particular link ]`
+`> Enter output file path: [ output.txt path]`
 
 
-### Features
-## Structured results based on extension 
-## Recursive approach
+# Features
+Structured results based on extension 
+Recursive approach
 
