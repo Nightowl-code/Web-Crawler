@@ -9,6 +9,12 @@ Author: Koushal Kedari
  `pip install requirements.txt`
 
 # Usage
+
+
+![image](https://github.com/Nightowl-code/Web-Crawler/assets/121932742/e9be9cae-292e-40a8-a3a0-925f93520a7c)
+
+
+
 Used to crawl or spider a domain for subdomains and pages linked with the domain.
 
 `$ python3 crawler.py `
