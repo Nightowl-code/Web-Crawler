@@ -1,0 +1,4 @@
+requests
+beautifulsoup
+bs4
+urllib.parse
