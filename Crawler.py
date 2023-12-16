@@ -3,16 +3,19 @@ from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
 import argparse
+from collections import defaultdict
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)s:%(message)s',
     level=logging.INFO)
 
 class Crawler:
-    def __init__(self, urls=[]):
+    def __init__(self, urls=[], max_pages_per_domain=5):
         self.visited_urls = []
         self.urls_to_visit = urls
         self.file_path = r'C:\Users\DELL\OneDrive\Documents\web-crawler\Output.txt'  # File to store fetched URLs
+        self.max_pages_per_domain = max_pages_per_domain
+        self.pages_per_domain = defaultdict(int)
 
     def download_url(self, url):
         try:
@@ -58,9 +61,14 @@ class Crawler:
         html = self.download_url(url)
         if html:
             linked_urls = self.get_linked_urls(url, html)
-            for link_url in linked_urls:
-                self.add_url_to_visit(link_url)
-            return linked_urls
+            parsed_url = urlparse(url)
+            domain = parsed_url.netloc  # Extracting domain
+            if self.pages_per_domain[domain] < self.max_pages_per_domain:
+                for link_url in linked_urls:
+                    self.add_url_to_visit(link_url)
+                self.pages_per_domain[domain] += 1
+                return linked_urls
+        return []
 
     def run(self):
         with open(self.file_path, 'a') as file:
@@ -85,4 +93,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     url_to_crawl = args.url
-    Crawler(urls=[url_to_crawl]).run()
+    Crawler(urls=[url_to_crawl], max_pages_per_domain=2).run()
