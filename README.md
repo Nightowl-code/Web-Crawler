@@ -1,7 +1,7 @@
-## Author: Koushal Kedari
+# Author: Koushal Kedari
 
-### Description
-## This is a Web Spider/Crawler made totaly with Python using beautifulsoup library.
+## Description
+# This is a Web Spider/Crawler made totaly with Python using beautifulsoup library.
 
 
 
