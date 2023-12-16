@@ -1,4 +1,22 @@
-Python Web Crawler to spider webpages
+### Author: Koushal Kedari
 
-Use case-
-python3 crawler.py -u [URL]
+## Description
+### This is a Web Spider/Crawler made totaly with Python using beautifulsoup library.
+
+
+
+## Installation
+ `pip install requirements.txt`
+
+## Usage
+### Used to crawl or spider a domain for subdomains and pages linked with the domain.
+`$ python3 crawler.py 
+> Enter the target URL: [Enter the url https://example.com
+> Enter recursion depth: [ Number of recursion on particular link ]
+> Enter output file path: [ output.txt path]`
+
+
+## Features
+### Structured results based on extension 
+### Recursive approach
+
