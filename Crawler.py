@@ -1,65 +1,71 @@
 import requests
 from bs4 import BeautifulSoup
-import concurrent.futures
-import argparse
 from urllib.parse import urljoin
-import threading
 import sys
+import os
+
+def banner():
+    print("\n\n")
+    print("""
+        
+ /$$      /$$           /$$              /$$$$$$            /$$       /$$                    
+| $$  /$ | $$          | $$             /$$__  $$          |__/      | $$                    
+| $$ /$$$| $$  /$$$$$$ | $$$$$$$       | $$  \__/  /$$$$$$  /$$  /$$$$$$$  /$$$$$$   /$$$$$$ 
+| $$/$$ $$ $$ /$$__  $$| $$__  $$      |  $$$$$$  /$$__  $$| $$ /$$__  $$ /$$__  $$ /$$__  $$
+| $$$$_  $$$$| $$$$$$$$| $$  \ $$       \____  $$| $$  \ $$| $$| $$  | $$| $$$$$$$$| $$  \__/
+| $$$/ \  $$$| $$_____/| $$  | $$       /$$  \ $$| $$  | $$| $$| $$  | $$| $$_____/| $$      
+| $$/   \  $$|  $$$$$$$| $$$$$$$/      |  $$$$$$/| $$$$$$$/| $$|  $$$$$$$|  $$$$$$$| $$      
+|__/     \__/ \_______/|_______/        \______/ | $$____/ |__/ \_______/ \_______/|__/      
+                                                 | $$                                        
+                                                 | $$                                        
+                                                 |__/                                        
+
+   *════════════════════════════════════════════════════════════════*
+      ╔════════════════════════════════════════════════════════════╗
+      ║     By        : Koushal Kedari                              ║                                                                        
+      ║     Github    : https://github.com/Nightowl-code           ║
+      ║     Licence   : MIT                                        ║
+      ║     Code      : Python                                     ║ 
+      ╚════════════════════════════════════════════════════════════╝
+    *════════════════════════════════════════════════════════════════*
+
+          
+          
+           """)
+    print("\n")
 
 visited_links = set()
-visited_links_lock = threading.Lock()
 
-def get_links(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    links = [urljoin(url, a['href']) for a in soup.find_all('a', href=True)]
-    return links
-
-def scrape_url(url, depth, output_file):
-    global visited_links
-
-    if depth == 0 or url in visited_links:
-        return
-
-    print(f"Crawling {url}")
-
-    visited_links.add(url)
-    with visited_links_lock:
-        with open(output_file, 'a') as file:
-            file.write(url + '\n')
-
-    links = get_links(url)
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_url = {executor.submit(scrape_url, link, depth - 1, output_file): link for link in links}
-
-        for future in concurrent.futures.as_completed(future_to_url):
-            link = future_to_url[future]
-            try:
-                future.result()
-            except Exception as exc:
-                print(f"Error Crawling {link}: {exc}")
-
-    # Exit if Ctrl+C is pressed
-    if threading.current_thread() is threading.main_thread():
-        sys.exit(0)
+# Functions for scraping, counting URLs, and categorizing
 
 def main():
-    parser = argparse.ArgumentParser(description='Web scraper with multithreading and recursion')
-    parser.add_argument('-u', '--url', type=str, help='Target URL', required=True)
-    parser.add_argument('-R', '--recursion', type=int, help='Recursion depth', required=True)
-    parser.add_argument('-o', '--output', type=str, help='Output file path', required=True)
-    args = parser.parse_args()
+    banner()
 
-    start_url = args.url
-    recursion_depth = args.recursion
-    output_file = args.output
+    while True:
+        start_url = input("Enter the target URL: ")
+        recursion_depth = int(input("Enter recursion depth: "))
+        output_file = input("Enter output file path: ")
 
-    try:
-        scrape_url(start_url, recursion_depth, output_file)
-    except KeyboardInterrupt:
-        print("\nAborted by user.")
-        sys.exit(0)
+        try:
+            scrape_url(start_url, recursion_depth, output_file)
+            print("Scraping completed successfully.")
+        except KeyboardInterrupt:
+            with open(output_file, 'a') as file:
+                file.write("\nAborted by user.")
+                
+                urls_count = count_urls_in_file(output_file)
+                file.write(f"\nNumber of URLs found: {urls_count}\n")
+                
+                print(f"Number of URLs found: {urls_count}")
+                print(f"Number of URLs in file: {urls_count}")
+
+                categorize_urls(output_file)  # Categorizing URLs after printing counts
+
+            sys.exit(0)
+
+        choice = input("Do you want to scrape another URL? (Y/N): ").strip().lower()
+        if choice != 'y':
+            break
 
 if __name__ == '__main__':
     main()
