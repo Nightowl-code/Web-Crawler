@@ -1,96 +1,65 @@
-import logging
-from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
+import concurrent.futures
 import argparse
-from collections import defaultdict
+from urllib.parse import urljoin
+import threading
+import sys
 
-logging.basicConfig(
-    format='%(asctime)s %(levelname)s:%(message)s',
-    level=logging.INFO)
+visited_links = set()
+visited_links_lock = threading.Lock()
 
-class Crawler:
-    def __init__(self, urls=[], max_pages_per_domain=5):
-        self.visited_urls = []
-        self.urls_to_visit = urls
-        self.file_path = r'C:\Users\DELL\OneDrive\Documents\web-crawler\Output.txt'  # File to store fetched URLs
-        self.max_pages_per_domain = max_pages_per_domain
-        self.pages_per_domain = defaultdict(int)
+def get_links(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    links = [urljoin(url, a['href']) for a in soup.find_all('a', href=True)]
+    return links
 
-    def download_url(self, url):
-        try:
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()  # Raise HTTPError for bad responses
-            return response.text
-        except requests.RequestException as e:
-            logging.error(f"Failed to download {url}: {e}")
-            return None
+def scrape_url(url, depth, output_file):
+    global visited_links
 
-    def get_linked_urls(self, url, html):
-        soup = BeautifulSoup(html, 'html.parser')
-        urls = []
-        for link in soup.find_all('a'):
-            path = link.get('href')
-            if path and path.startswith('/'):
-                path = urljoin(url, path)
-            urls.append(path)
-        return urls
+    if depth == 0 or url in visited_links:
+        return
 
-    def categorize_url(self, url):
-        parsed_url = urlparse(url)
-        path = parsed_url.path
-        if path.endswith(('.jpg', '.jpeg')):
-            return 'jpg/jpeg'
-        elif path.endswith('.pdf'):
-            return 'pdf'
-        elif path.endswith('.html'):
-            return 'html'
-        elif path.endswith('.css'):
-            return 'css'
-        elif path.endswith('.js'):
-            return 'js'
-        else:
-            return 'other'
+    print(f"Crawling {url}")
 
-    def add_url_to_visit(self, url):
-        if url and url not in self.visited_urls and url not in self.urls_to_visit:
-            self.urls_to_visit.append(url)
+    visited_links.add(url)
+    with visited_links_lock:
+        with open(output_file, 'a') as file:
+            file.write(url + '\n')
 
-    def crawl(self, url):
-        html = self.download_url(url)
-        if html:
-            linked_urls = self.get_linked_urls(url, html)
-            parsed_url = urlparse(url)
-            domain = parsed_url.netloc  # Extracting domain
-            if self.pages_per_domain[domain] < self.max_pages_per_domain:
-                for link_url in linked_urls:
-                    self.add_url_to_visit(link_url)
-                self.pages_per_domain[domain] += 1
-                return linked_urls
-        return []
+    links = get_links(url)
 
-    def run(self):
-        with open(self.file_path, 'a') as file:
-            while self.urls_to_visit:
-                url = self.urls_to_visit.pop(0)
-                logging.info(f'Crawling: {url}')
-                try:
-                    linked_urls = self.crawl(url)
-                    if linked_urls:
-                        for link_url in linked_urls:
-                            if link_url:
-                                category = self.categorize_url(link_url)
-                                file.write(f"{category.upper()} URL: {link_url}\n")
-                except Exception as e:
-                    logging.exception(f'Failed to crawl {url}: {e}')
-                finally:
-                    self.visited_urls.append(url)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_url = {executor.submit(scrape_url, link, depth - 1, output_file): link for link in links}
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Web Crawler')
-    parser.add_argument('-u', '--url', help='URL to crawl', required=True)
+        for future in concurrent.futures.as_completed(future_to_url):
+            link = future_to_url[future]
+            try:
+                future.result()
+            except Exception as exc:
+                print(f"Error Crawling {link}: {exc}")
+
+    # Exit if Ctrl+C is pressed
+    if threading.current_thread() is threading.main_thread():
+        sys.exit(0)
+
+def main():
+    parser = argparse.ArgumentParser(description='Web scraper with multithreading and recursion')
+    parser.add_argument('-u', '--url', type=str, help='Target URL', required=True)
+    parser.add_argument('-R', '--recursion', type=int, help='Recursion depth', required=True)
+    parser.add_argument('-o', '--output', type=str, help='Output file path', required=True)
     args = parser.parse_args()
 
-    url_to_crawl = args.url
-    Crawler(urls=[url_to_crawl], max_pages_per_domain=2).run()
+    start_url = args.url
+    recursion_depth = args.recursion
+    output_file = args.output
+
+    try:
+        scrape_url(start_url, recursion_depth, output_file)
+    except KeyboardInterrupt:
+        print("\nAborted by user.")
+        sys.exit(0)
+
+if __name__ == '__main__':
+    main()
