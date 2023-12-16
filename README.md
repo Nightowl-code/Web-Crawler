@@ -22,5 +22,6 @@ Used to crawl or spider a domain for subdomains and pages linked with the domain
 
 # Features
 Structured results based on extension 
+
 Recursive approach
 
