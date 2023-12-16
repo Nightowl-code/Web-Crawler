@@ -17,7 +17,7 @@ Author: Koushal Kedari
 
 Used to crawl or spider a domain for subdomains and pages linked with the domain.
 
-`$ python3 crawler.py `
+`$ python3 Web_spider.py `
 
 `> Enter the target URL: [Enter the url https://example.com`
 
