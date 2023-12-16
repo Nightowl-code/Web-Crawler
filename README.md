@@ -9,7 +9,7 @@ Author: Koushal Kedari
  `pip install requirements.txt`
 
 # Usage
-# Used to crawl or spider a domain for subdomains and pages linked with the domain.
+Used to crawl or spider a domain for subdomains and pages linked with the domain.
 `$ python3 crawler.py `
 `> Enter the target URL: [Enter the url https://example.com`
 `> Enter recursion depth: [ Number of recursion on particular link ]`
