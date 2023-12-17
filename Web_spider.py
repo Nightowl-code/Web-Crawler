@@ -23,7 +23,7 @@ def banner():
 
    *════════════════════════════════════════════════════════════════*
       ╔════════════════════════════════════════════════════════════╗
-      ║     By        : Koushal Kedari                              ║                                                                        
+      ║     By        : Koushal Kedari                             ║                                                                        
       ║     Github    : https://github.com/Nightowl-code           ║
       ║     Licence   : MIT                                        ║
       ║     Code      : Python                                     ║ 
